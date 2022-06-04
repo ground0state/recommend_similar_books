@@ -1,14 +1,9 @@
-import pandas as pd
-import numpy as np
-import os
-import requests
 import ast
-from bs4 import BeautifulSoup
-import subprocess
-from scipy.sparse import lil_matrix, csr_matrix
 import pickle
-from sklearn.decomposition import NMF
-from sklearn.decomposition import TruncatedSVD
+
+import pandas as pd
+from scipy.sparse import lil_matrix
+from sklearn.decomposition import NMF, TruncatedSVD
 
 
 def get_swap_dict(d):
@@ -23,7 +18,7 @@ def pickle_dump(obj, path):
 # 使用するユーザと本の抽出
 userlist = []
 bookdict = {}
-with open("booklist_20200706_092102.csv") as f:
+with open("../data/booklist_20200726_131226.csv") as f:
     for s_line in f:
         user, userbooklist = s_line.split(":", 1)
         # 読んだ本が10冊以下の人は含めない
@@ -35,6 +30,9 @@ with open("booklist_20200706_092102.csv") as f:
                 bookdict[book] = 1
             else:
                 bookdict[book] += 1
+
+# 本命：登場回数 の辞書を保存
+pickle_dump(bookdict, '../data/bookdict_all_count.pickle')
 
 # 10冊以上読まれている本だけを残す
 bookdict_valid = {}
@@ -48,7 +46,7 @@ for key, value in bookdict.items():
 bookset = set([book for book in bookdict_valid.keys()])
 mat = lil_matrix((len(userlist), len(bookdict_valid)))
 usernum = 0
-with open("booklist_20200706_092102.csv") as f:
+with open("../data/booklist_20200726_131226.csv") as f:
     for s_line in f:
         user, userbooklist = s_line.split(":", 1)
         # 読んだ本が10冊以下の人は含めない
@@ -63,14 +61,14 @@ with open("booklist_20200706_092102.csv") as f:
 bookdict_swap = get_swap_dict(bookdict_valid)
 
 # 書籍と番号の対応表を保存
-pickle_dump(bookdict_swap, 'bookdict.pickle')
+pickle_dump(bookdict_swap, '../data/bookdict.pickle')
 
 # NMFによる次元削減
 nmf = NMF(n_components=100, init='random', random_state=42)
 book100f_nmf = nmf.fit_transform(mat.T)
-pd.DataFrame(book100f_nmf).to_pickle('book100f.nmf.pkl')
+pd.DataFrame(book100f_nmf).to_pickle('../data/book100f.nmf.pkl')
 
 # SVDによる次元削減
 svd = TruncatedSVD(n_components=100, n_iter=5, random_state=42)
 book100f_svd = svd.fit_transform(mat.T)
-pd.DataFrame(book100f_svd).to_pickle('book100f_svd.pkl')
+pd.DataFrame(book100f_svd).to_pickle('../data/book100f_svd.pkl')

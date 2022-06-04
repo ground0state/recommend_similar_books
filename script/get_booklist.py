@@ -1,9 +1,10 @@
-import requests
-from bs4 import BeautifulSoup
-import time
 import datetime
 import logging
+import time
+
 import pandas as pd
+import requests
+from bs4 import BeautifulSoup
 
 dt_now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 logging.basicConfig(filename=f'{dt_now}_get_booklist.log', level=logging.INFO)

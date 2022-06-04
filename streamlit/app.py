@@ -1,11 +1,12 @@
-import pandas as pd
-import streamlit as st
 import pickle
+
 import numpy as np
-from whoosh.qparser import QueryParser
+import pandas as pd
+from sudachipy import dictionary, tokenizer
 from whoosh.index import open_dir
-from sudachipy import tokenizer
-from sudachipy import dictionary
+from whoosh.qparser import QueryParser
+
+import streamlit as st
 
 
 def pickle_load(path):
@@ -16,9 +17,9 @@ def pickle_load(path):
 
 @st.cache(allow_output_mutation=True)  # オプションつけないとかなり遅い
 def read_file():
-    mat_svd = np.array(pd.read_pickle('book100f_svd_limit.pkl'))
-    mat_nmf = np.array(pd.read_pickle('book100f_NMF_limit.pkl'))
-    bookdict = pickle_load('bookdict_limit.pickle')
+    mat_svd = np.array(pd.read_pickle('../data/book100f_svd.pkl'))
+    mat_nmf = np.array(pd.read_pickle('../data/book100f_NMF.pkl'))
+    bookdict = pickle_load('../data/bookdict.pickle')
     return mat_svd, mat_nmf, bookdict
 
 
@@ -30,7 +31,7 @@ def calc_cos_matrix(mat, indexnum):
     d = mat_batch @ mat.T
     norm1 = (mat_batch**2).sum(axis=1, keepdims=True) ** .5
     norm2 = (mat**2).sum(axis=1, keepdims=True) ** .5
-    return d/norm1/norm2.T
+    return d / norm1 / norm2.T
 
 
 def get_swap_dict(d):
@@ -60,7 +61,7 @@ for word in searchword:
                                        for m in tokenizer_obj.tokenize(word, mode)])
         searchword_parsed += ") "
 # st.write(searchword_parsed)
-ix = open_dir("index")
+ix = open_dir("../data/heroku_index")
 qp = QueryParser("content", schema=ix.schema)
 
 outarr = []
